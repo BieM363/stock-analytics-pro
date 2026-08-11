@@ -1,4 +1,4 @@
-# 9. [Untuk Stockbit] Real-Time Stock Analytics & Portfolio Simulator Web App
+# 9. Real-Time Stock Analytics & Portfolio Simulator Web App
 
 > **Developed by: BieM363**  
 > GitHub: [https://github.com/BieM363/stock-analytics-pro](https://github.com/BieM363/stock-analytics-pro)
