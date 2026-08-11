@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Globe, Plus, Wallet, TrendingUp, BarChart2 } from 'lucide-react';
+import { Search, Globe, Plus, Wallet, TrendingUp, BarChart2, Code } from 'lucide-react';
 
 export default function Header({
   usdToIdr,
@@ -38,9 +38,11 @@ export default function Header({
             </div>
             <div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#F1F5F9', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                StockAnalytics <span style={{ color: '#00C853', fontSize: '10px', padding: '1px 6px', background: 'var(--color-green-bg)', borderRadius: '4px', border: '1px solid rgba(0,200,83,0.3)' }}>EMERALD</span>
+                StockAnalytics <span style={{ color: '#00C853', fontSize: '10px', padding: '1px 6px', background: 'var(--color-green-bg)', borderRadius: '4px', border: '1px solid rgba(0,200,83,0.3)' }}>PRO</span>
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Real-Time Stock & Portfolio Simulator</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>by</span> <strong style={{ color: 'var(--color-green)' }}>BieM363</strong>
+              </div>
             </div>
           </div>
 
@@ -156,26 +158,32 @@ export default function Header({
 
       {/* Market Overview Ticker Bar */}
       <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)', padding: '6px 20px', overflowX: 'auto' }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', gap: '24px', fontSize: '12px', whiteSpace: 'nowrap' }}>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>IHSG:</span>
-            <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>7,420.50</span>
-            <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+0.45%</span>
+        <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', fontSize: '12px', whiteSpace: 'nowrap' }}>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>IHSG:</span>
+              <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>7,420.50</span>
+              <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+0.45%</span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>S&P 500:</span>
+              <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>5,580.20</span>
+              <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+0.62%</span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Bitcoin:</span>
+              <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>$64,050</span>
+              <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+2.30%</span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Gold (Emas):</span>
+              <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>Rp 1.395.000/g</span>
+              <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+0.50%</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>S&P 500:</span>
-            <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>5,580.20</span>
-            <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+0.62%</span>
-          </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Bitcoin:</span>
-            <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>$64,050</span>
-            <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+2.30%</span>
-          </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Gold (Emas):</span>
-            <span className="font-mono" style={{ fontWeight: '700', color: '#F1F5F9' }}>Rp 1.395.000/g</span>
-            <span style={{ color: 'var(--color-green)', fontWeight: '700' }}>+0.50%</span>
+
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Code size={12} color="var(--color-green)" /> StockAnalytics PRO • Developed by <strong style={{ color: 'var(--color-green)' }}>BieM363</strong>
           </div>
         </div>
       </div>

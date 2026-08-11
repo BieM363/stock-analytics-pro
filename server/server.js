@@ -1,3 +1,11 @@
+/**
+ * ============================================================================
+ * StockAnalytics PRO - Real-Time Engine & Live WebSockets API
+ * Developed by: BieM363
+ * GitHub: https://github.com/BieM363/stock-analytics-pro
+ * ============================================================================
+ */
+
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -15,8 +23,8 @@ const io = new Server(httpServer, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 });
 
-// USD to IDR live exchange rate (default 16,250 until fetched)
-let usdToIdr = 16250;
+// USD to IDR live exchange rate (default 17,830 until fetched)
+let usdToIdr = 17830;
 
 // ==========================================
 // REDIS CACHE MANAGER
@@ -84,7 +92,6 @@ const ASSETS_CONFIG = [
 
 const assetsMap = new Map();
 
-// Helper to generate initial historical series
 function generateSeries(basePrice, count = 90) {
   const points = [];
   let current = basePrice * 0.90;
@@ -109,7 +116,6 @@ function generateSeries(basePrice, count = 90) {
   return points;
 }
 
-// Initialize Map
 ASSETS_CONFIG.forEach(cfg => {
   const assetObj = {
     symbol: cfg.symbol,
@@ -132,22 +138,14 @@ ASSETS_CONFIG.forEach(cfg => {
   redisCache.set(`asset:${cfg.symbol}`, assetObj, 600);
 });
 
-// Function to fetch REAL LIVE DATA from Yahoo Finance
 async function fetchRealMarketData() {
-  console.log('🔄 [Live Market Data] Fetching real-time quotes from Yahoo Finance...');
-  
-  // 1. Fetch USD to IDR rate
   try {
     const usdQuote = await yf.quote('USDIDR=X');
     if (usdQuote && usdQuote.regularMarketPrice) {
       usdToIdr = Math.round(usdQuote.regularMarketPrice);
-      console.log(`💵 [Rate Live] 1 USD = Rp ${usdToIdr.toLocaleString('id-ID')}`);
     }
-  } catch (err) {
-    console.warn('USD/IDR fetch warning:', err.message);
-  }
+  } catch (err) {}
 
-  // 2. Fetch all 19 assets
   for (const cfg of ASSETS_CONFIG) {
     try {
       const quote = await yf.quote(cfg.yahooSymbol);
@@ -156,9 +154,7 @@ async function fetchRealMarketData() {
         let livePrice = quote.regularMarketPrice;
         let prevClose = quote.regularMarketPreviousClose || quote.regularMarketPrice;
 
-        // Emas conversion from Gold Futures (USD/oz) to IDR/gram
         if (cfg.symbol === 'EMAS') {
-          // 1 troy ounce = 31.1034768 grams
           const pricePerGramUSD = livePrice / 31.1034768;
           livePrice = Math.round(pricePerGramUSD * usdToIdr);
           prevClose = Math.round((prevClose / 31.1034768) * usdToIdr);
@@ -176,7 +172,6 @@ async function fetchRealMarketData() {
         asset.volume = quote.regularMarketVolume || asset.volume;
         asset.lastUpdated = Date.now();
 
-        // Update latest candle
         if (asset.candles && asset.candles.length > 0) {
           const last = asset.candles[asset.candles.length - 1];
           last.close = livePrice;
@@ -186,7 +181,6 @@ async function fetchRealMarketData() {
 
         redisCache.set(`asset:${cfg.symbol}`, asset, 600);
 
-        // Emit socket tick
         io.emit('asset_tick', {
           symbol: cfg.symbol,
           price: livePrice,
@@ -198,19 +192,13 @@ async function fetchRealMarketData() {
           timestamp: Date.now()
         });
       }
-    } catch (err) {
-      console.warn(`Warning fetching ${cfg.symbol} (${cfg.yahooSymbol}):`, err.message);
-    }
+    } catch (err) {}
   }
 }
 
-// Initial fetch on start
 fetchRealMarketData();
-
-// Interval to re-fetch live market data every 20 seconds
 setInterval(fetchRealMarketData, 20000);
 
-// Micro fluctuation tick every 1.5s for seamless UI interactivity
 setInterval(() => {
   const symbolList = Array.from(assetsMap.keys());
   const randomSymbol = symbolList[Math.floor(Math.random() * symbolList.length)];
@@ -247,18 +235,9 @@ setInterval(() => {
 
 // REST API Endpoints
 app.get('/api/assets', (req, res) => {
-  res.json({ assets: Array.from(assetsMap.values()), usdToIdr, cacheStats: redisCache.getStats() });
-});
-
-app.get('/api/assets/:symbol', (req, res) => {
-  const asset = assetsMap.get(req.params.symbol.toUpperCase());
-  if (!asset) return res.status(404).json({ error: 'Asset not found' });
-  res.json({ asset, usdToIdr });
-});
-
-io.on('connection', (socket) => {
-  console.log(`[StockAnalytics Engine] Client connected: ${socket.id}`);
-  socket.emit('initial_data', {
+  res.json({
+    author: 'BieM363',
+    appName: 'StockAnalytics PRO',
     assets: Array.from(assetsMap.values()),
     usdToIdr,
     cacheStats: redisCache.getStats()
@@ -267,6 +246,6 @@ io.on('connection', (socket) => {
 
 const PORT = 3000;
 httpServer.listen(PORT, () => {
-  console.log(`🚀 [StockAnalytics Engine] Live Server running on http://localhost:${PORT}`);
-  console.log(`📡 Fetching real-time market data from Yahoo Finance for 19 assets & USD/IDR`);
+  console.log(`🚀 [StockAnalytics PRO Engine] Live Server running on http://localhost:3000`);
+  console.log(`👨‍💻 Developed by: BieM363 (https://github.com/BieM363/stock-analytics-pro)`);
 });

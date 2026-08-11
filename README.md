@@ -1,5 +1,10 @@
 # 9. [Untuk Stockbit] Real-Time Stock Analytics & Portfolio Simulator Web App
 
+> **Developed by: BieM363**  
+> GitHub: [https://github.com/BieM363/stock-analytics-pro](https://github.com/BieM363/stock-analytics-pro)
+
+---
+
 ## 📌 Konsep
 Platform analisis saham & simulasi portofolio investasi secara real-time berbasis WebSockets.
 
@@ -35,3 +40,6 @@ npm start
 npm run server # Express Backend (Port 3000)
 npm run dev    # Vite Frontend (Port 5173)
 ```
+
+---
+*Created with ❤️ by BieM363*
