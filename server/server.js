@@ -23,6 +23,14 @@ const io = new Server(httpServer, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 });
 
+io.on('connection', (socket) => {
+  console.log(`⚡ Client connected: ${socket.id}`);
+  socket.emit('initial_data', {
+    assets: Array.from(assetsMap.values()),
+    usdToIdr
+  });
+});
+
 // USD to IDR live exchange rate (default 17,830 until fetched)
 let usdToIdr = 17830;
 

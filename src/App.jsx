@@ -6,6 +6,7 @@ import GoogleFinanceChart from './components/GoogleFinanceChart';
 import PortfolioSimulator from './components/PortfolioSimulator';
 import AddAssetModal from './components/AddAssetModal';
 import { CheckCircle2 } from 'lucide-react';
+import { getDefaultAssets } from './data/initialAssets';
 
 const SAMPLE_PRESET_HOLDINGS = [
   { symbol: 'BBCA', quantity: 5, avgPrice: 6225, currency: 'IDR' },    // 5 Lot BBCA (Harga Real 6.225)
@@ -16,8 +17,8 @@ const SAMPLE_PRESET_HOLDINGS = [
 ];
 
 export default function App() {
-  const [assets, setAssets] = useState([]);
-  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [assets, setAssets] = useState(() => getDefaultAssets());
+  const [selectedAsset, setSelectedAsset] = useState(() => getDefaultAssets()[0]);
   const [usdToIdr, setUsdToIdr] = useState(17830);
   const [displayCurrency, setDisplayCurrency] = useState('IDR');
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,19 +41,28 @@ export default function App() {
     localStorage.setItem('google_finance_portfolio', JSON.stringify(portfolio));
   }, [portfolio]);
 
-  // Connect WebSockets
+  // Connect WebSockets with dynamic URL and client-side fallback
   useEffect(() => {
-    const socket = io('http://localhost:3000', { reconnectionAttempts: 5, timeout: 3000 });
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    let socketConnected = false;
+
+    const socket = io(backendUrl, { reconnectionAttempts: 3, timeout: 2500 });
+
+    socket.on('connect', () => {
+      socketConnected = true;
+    });
 
     socket.on('initial_data', (data) => {
-      setAssets(data.assets || []);
+      socketConnected = true;
       if (data.assets && data.assets.length > 0) {
-        setSelectedAsset(prev => prev ? data.assets.find(a => a.symbol === prev.symbol) || data.assets[0] : data.assets[0]);
+        setAssets(data.assets);
+        if (!selectedAsset) setSelectedAsset(data.assets[0]);
       }
       if (data.usdToIdr) setUsdToIdr(data.usdToIdr);
     });
 
     socket.on('asset_tick', (tick) => {
+      socketConnected = true;
       setAssets(prevList => {
         return prevList.map(item => {
           if (item.symbol === tick.symbol) {
@@ -81,7 +91,56 @@ export default function App() {
       if (tick.usdToIdr) setUsdToIdr(tick.usdToIdr);
     });
 
-    return () => socket.disconnect();
+    // Fallback simulation loop for Vercel / standalone mode
+    const fallbackInterval = setInterval(() => {
+      if (socketConnected) return;
+
+      setAssets(prevList => {
+        if (!prevList || prevList.length === 0) return prevList;
+        const randomIndex = Math.floor(Math.random() * prevList.length);
+        return prevList.map((asset, idx) => {
+          if (idx !== randomIndex) return asset;
+
+          const pctChange = (Math.random() - 0.495) * 0.002;
+          let newPrice = asset.price * (1 + pctChange);
+
+          if (asset.currency === 'IDR') {
+            if (asset.symbol === 'EMAS') newPrice = Math.round(newPrice / 1000) * 1000;
+            else if (newPrice > 500) newPrice = Math.round(newPrice / 10) * 10;
+          } else {
+            newPrice = parseFloat(newPrice.toFixed(newPrice < 1 ? 4 : 2));
+          }
+
+          const change = parseFloat((newPrice - asset.prevClose).toFixed(2));
+          const changePercent = asset.prevClose > 0 ? parseFloat(((change / asset.prevClose) * 100).toFixed(2)) : 0;
+
+          const updated = {
+            ...asset,
+            price: newPrice,
+            change,
+            changePercent,
+            high: Math.max(asset.high, newPrice),
+            low: Math.min(asset.low, newPrice),
+            lastUpdated: Date.now()
+          };
+
+          if (asset.candles && asset.candles.length > 0) {
+            const candles = [...asset.candles];
+            candles[candles.length - 1].close = newPrice;
+            candles[candles.length - 1].high = Math.max(candles[candles.length - 1].high, newPrice);
+            candles[candles.length - 1].low = Math.min(candles[candles.length - 1].low, newPrice);
+            updated.candles = candles;
+          }
+
+          return updated;
+        });
+      });
+    }, 2000);
+
+    return () => {
+      clearInterval(fallbackInterval);
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
